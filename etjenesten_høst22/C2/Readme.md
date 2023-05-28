@@ -117,7 +117,7 @@ Vindu til høyre:
 - Men før kommandoen lagres i databasen blir den lagret som en tmp-fil i "/tmp/.../" (denne løsningen sammen med linux-rettigheter er hva som blir utnyttet)
 
 Vindu til venstre:
-- Her kjøres det et skript som hele tiden sjekker om kommandoen (eks. tmp15gj3H2) er lagret i "/tmp/.../"
-- Når kommandoen er lagret, fjernes den og blir erstattet med mitt eget java-objekt med "reverse shell"
+- Her kjøres bash-scriptet vist ovenfor som hele tiden sjekker om kommandoen (eks. tmp15gj3H2) er lagret i "/tmp/.../"
+- Når kommandoen er lagret, fjernes den og blir erstattet med mitt eget java-objekt som oppretter et "reverse shell" til en maskin jeg styrer
 
 Mappen "/tmp/.../" har 777 rettigheter. Det har altså ingen betydning at tmp-filen eies av c2 med 700 rettigheter.
