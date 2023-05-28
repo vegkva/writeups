@@ -3,6 +3,8 @@
 
 Jeg deltok i Etterretningstjenestens CTF høsten 2022, og denne writeupen tar for seg en av oppgavene.
 
+<br>
+<br>
 
 Følgende kodesnutt viser litt av serverkoden for C2-rammeverket
 
@@ -36,6 +38,9 @@ C2-rammerverket var satt opp slik at angriperen kunne sende en javaserialisert k
 Jeg hadde tilgang til maskinen som kjørte denne C2-serveren, og målet mitt var å få tilgang til en eller flere klienter. Jeg prøvde å lage ondsinnede javaserialiserte kommandoer og sendte disse direkte til en av klientene, men dette gikk ikke fordi jeg ikke hadde riktig signatur.
 
 Etter å ha studert server-koden fikk jeg øye på at kommandoen ble først lagret som en tmp-fil før den ble deserialisert og signatur sjekket. Kanskje kunne jeg utnytte dette ved å bytte ut en legitim kommando med min egen.
+
+<br>
+<br>
 
 Siden tmp-filen ble slettet med en gang kommandoen var blitt lagret i databasen måtte jeg skrive et enkelt bash-script som byttet ut den legitime kommandoen med min egen:
 
@@ -97,3 +102,9 @@ public class evilSerial {
 
 }
 ```
+
+<br>
+
+Video av gjennomføring:
+
+![](https://github.com/vegkva/writeups/blob/main/etjenesten_h%C3%B8st22/C2/ezgif-5-710a3f6a0c.gif)
