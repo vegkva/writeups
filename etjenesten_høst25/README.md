@@ -54,7 +54,7 @@ Tilkobling til kryptogram ga oss dette kryptogrammet:
 `øwbxl hjcbx læxmx fpxfx lmrcb xlpxo rvøpl rlvrc hrjlø cjxøp brdrb xbræs xlxbb xfhxl yxocx lwfxy øvwjf dryxf xjhhy føvæf apxcp jyxjf yxbøb bxfoj jmwfx mjdxf`
 
 Det ble i oppgaveteksten hintet om den mørke dagen 23. november 1935 og Egil Mørk. Etter litt googling fant jeg boken "Svartkammeret", en bok av Alf R. Jacobsen og Egil Mørk. Boken ligger på Nasjonalbibliotekets nettsider: https://www.nb.no/items/62e1214022fd94e36cc425d1bee9542d?page=15&searchText=magasinet.
-Her finnes det også søkemuligheter, så jeg søkte på 23. november 1935. Kapittel 2 (side 16) forteller om Aftenpostens A-Magasin denne lørdagen, og om den kryptologiske nøtten Roscher Lund hadde laget for å rekruttere sivile til etteretningstjenesten.
+Her finnes det også søkemuligheter, så jeg søkte på "23. november 1935". Kapittel 2 (side 16) forteller om Aftenpostens A-Magasin lørdag 23. november 1935, og om den kryptologiske nøtten Roscher Lund hadde laget for å rekruttere sivile til etteretningstjenesten.
 
 På side 18 ser man noe som ligner veldig på det vi får fra oppgaven:
 `æsxic oawbw jfcdø fxfla æføvb rjfyx løwbx ihjcb ximxy yxoxf øbyxf wøoyb wrfxc hfxiv æjmæx fræsx lalyx foawb ølvvfx hxbwf xyøvm xlabx ldrfp lriv`
