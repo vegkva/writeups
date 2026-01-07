@@ -178,6 +178,23 @@ Dersom man ikke ønsker å spille i det hele tatt, så kan man plassere `SceneMa
 <br>
 
 ## 1.16 Legend of Vexillum
+Oppgavetekst:
+```md
+# Legend of Vexillum
+
+Vi har funnet et spill laget av en utvikler som nå jobber i GooodGames. Vedlagt er en forumpost, en manual for spillet og selve spillet.
+
+I følge forumposten er sikkerheten på spillet dårlig implementert. Siden utvikleren nå jobber i GooodGames er det mulig at de har implementert noe liknende.
+
+1. Last ned spillet
+2. Kjør spillet med `./game legend-of-vexillum.ctf.cybertalent.no 2000`
+3. Finn ut av hvordan sikkerheten til spillet er sårbar og vis at denne kan utnyttes ved å komme til siste rom i spillet
+
+NB: Oppgaven kan ikke løses fra corax.
+NB: Dersom du spiller og vinner spillet får du et annet flagg.
+
+```
+
 Dette er et tekstbasert "dungeon"-spill, hvor målet er besøke ulike rom og samle og kombinere diverse gjenstander som gir nye gjenstander. 
 Når man besøker nye rom, kan man velge å enten se i rommet, gå til en dør eller område, ta en gjenstand eller bruke en eller flere gjenstander. Eksempel på resultat av å se i rommet:
 ```
@@ -198,5 +215,77 @@ Til slutt dukket det opp et skjult flagg, og et høflig takk for at jeg fullfør
 <br>
 <br>
 
-## 2.6 Cplusminus
 
+## 2.6 Cplusminus
+Oppgavetekst:
+````md
+# C+-
+
+Vi fant dette programmet kjørende på infrastrukturen deres, men det virker som om Joe Logan ikke klarte å finne en C++-kompilator i tide, så han bestemte seg for å implementere OOP og virtuelle funksjoner i C? 
+
+Hjelp oss med å finne ut hva de skjuler!
+
+```sh
+nc cplusminus 1337
+```
+````
+
+Programmet var en terminalbasert device manager. Funksjonaliteten begrenset seg til følgende: 
+```
+----------------- 
+1. Add USB Device 
+2. Add Mouse Device
+3. Remove Device
+4. Show Device Info
+5. Configure USB Device
+6. Exit
+```
+
+
+Her fant jeg en heap exploit som førte til at jeg kunne overskrive addressen på et "Mouse Device"-objekt. 
+
+Hvert objekt inneholder en print-metode, metoden som kjører når brukeren velger alternativ "4: Show Device Info". 
+Ufullstendig fjerning av objektet førte til at jeg kunne overskrive adressen til denne print-metoden til metoden "print_flag()" og dermed motta flagget.
+
+<br>
+<br>
+
+
+## 2.8 Flagle
+Oppgavetekst:
+````md
+# Flagle
+
+Bare gjett flagget.
+
+```sh
+ssh play@flagle
+```
+````
+Dette var et terminalbasert gjettespill hvor man hadde seks forsøk på å gjette riktig flagg.
+Det var satt opp seks rader og 32 kolonner, og for hver rad man fylte inn med hexadecimal fikk man vite hvilke hexadecimal som var i flagget og riktig plassert (grønn farge) og hvilke som ikke fantes i flagget i det hele tatt (hvit farge). Spillet ga ingen informasjon om riktig hexadecimal men feil plassering. Det som var interessant var at etter de seks førsøkene var brukt, fikk vi vite flagget.
+
+Man kunne sikkert ha løst denne ved å spille nok ganger, evt laget et script for å brute force det. Men det faktum at vi fikk se flagget etter forsøkene var brukt opp, var etter min mening et hint om at flagget ble generert basert på en timestamp. Derfor testet jeg dette ved å starte to spill samtidig (eller så samtidig jeg klarte med håp om at det var litt slingringsmonn)
+I tmux kan man synkronisere kommoandoer i flere vinduer ved å skrive inn `:set synchronize-panes on`. Dermed kunne jeg ha to vinduer åpne i tmux, og skrive ssh play@flagle og trykke ENTER i det ene vinduet, og det samme ble gjort i det andre vinduet samtidig-ish.
+For å teste om jeg hadde fått samme flagg i begge vinduene, skrev jeg for eksempel bare "a" i første rad. Dersom begge vinduene viste at f.eks. "a" var riktig i plasseringene 5,16 og 28, kunne jeg med ganske stor trygghet si at jeg hadde startet to spill med samme flagg. Så da var det bare å bruke opp alle forsøkene i det ene vinduet, notere flagget, og skrive inn flagget i det andre vinduet.
+
+
+## 2.11 Karapeks
+```md
+# Karapeks 
+
+Vi har fanget opp følgende melding:
+
+Bob,
+I found this old webpage on our local network. Do you know who made it? I can't find which machine is hosting it and it's only pushing out gibberish. The more I talk with it the more of it becomes readable, but I still can't make sense of it.
+- Connor Mcdonald
+
+Se om du kan finne nyttig informasjon og få det til å gi mening.
+
+https://karapeks-cube.ctf.cybertalent.no
+```
+
+Enkelt brukergrensesnitt der man kan sende inn tekst, og man får tilbake tilsynelatende gibberish. Men etterhvert som man skriver flere forskjellige ord, blir det som man får tilbake mer forståelig. Ved å analysere nettverkstrafikken, kan man se på JWT-tokenet at det sendes inn en liste kalt "words", og hver gang man sender inn ny ord, vokser JWT-tokenet. Så jeg antok at serveren sjekket om listen inneholdt ord som oversatt ble noe av det som var gibberish. Hvis ja, ble det gibberiske ordet byttet ut med det ordet som brukeren hadde sendt inn.
+Etter litt manuell testing så jeg at det dukket opp engelske ord, så da sendte jeg inn 466 000 engelske ord (https://raw.githubusercontent.com/dwyl/english-words/refs/heads/master/words.txt).
+Denne mengden ord gjorde at når jeg skrev "flag", var den tidligere uleselige teksten oversatt til engelsk og jeg kunne lese at man måtte skrive "open sesame".
+Da kom den enda mer uleselig tekst som ikke var oversatt, men man kunne tydelig se hvor flagget var plassert. Alle sifrene i flagget var leselig, så da var det bare å manuelt mappe opp resten av det hexadecimale alfabetet for å få flagget.
