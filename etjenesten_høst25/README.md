@@ -272,6 +272,8 @@ You squeeze the sphere until you pierce the skin. Slowly, the speech begins maki
 ```
 Til slutt dukket det opp et skjult flagg, og et høflig takk for at jeg fullførte spillet.
 
+Python-klient: https://github.com/vegkva/writeups/blob/main/etjenesten_h%C3%B8st25/vexillum.py
+
 <br>
 <br>
 
