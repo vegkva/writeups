@@ -1,4 +1,5 @@
-# Writeup av et utvalg oppgaver
+# Writeup av et utvalg oppgaver fra Etterretningstjenestens CTF høsten 2025 i forbindelse med Talentprogram cyberoperasjoner
+https://www.etterretningstjenesten.no/jobb-og-karriere/cybertalent
 
 
 ## 1.6 Unchained
