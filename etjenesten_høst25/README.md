@@ -204,14 +204,35 @@ Spillet virker veldig vanskelig. Kanskje du kan jukse?
 ```
 Dette var en veldig gøy oppgave, kunne gjerne vært større. 
 
-Dette er et 2D-spill hvor målet er å skyte ned alle missilene. Det er game over hvis ett av missilene kommer over til den andre siden. Spillet lar seg ikke vinne uten juks.
+Dette er et 2D-spill hvor målet er å skyte ned alle missilene. Det er game over hvis ett av missilene kommer over til den andre siden. Spillet lar seg ikke vinne uten juks. Det er totalt 16 missiler som skal skytes ned, og spillet er laget slik at det er en forsinkelse (3sek) mellom hver gang spilleren kan avfyre et anti-missil.
+<p align="center">
+<img src="images/1.15_1.png" alt="Alt Text" width="50%" height="50%">
+</p>
+
+Bildet over viser at missilene nesten er over på den andre siden.
+
 Spillet er skrevet i Unity (.NET), som betyr at det lar seg enkelt dekompileres av et verktøy som dnSpy (https://github.com/dnSpy/dnSpy). Med dette verktøyet kan man også endre på metoder og rekompilere spillet med ny funksjonalitet (juks).
 Det viser seg at det er flere måter å jukse på, og dermed motta flagget.
 
-I koden henvises det til `SceneManager.LoadScene("Win");`. Når siste missil er skutt ned, lastes scenen "Win" og flagget vises. Det er totalt 16 missiler som skal skytes ned, og spillet er laget slik at det er en forsinkelse (3sek) mellom hver gang brukeren kan skyte. 
+I koden henvises det til `SceneManager.LoadScene("Win");`. Når siste missil er skutt ned, lastes scenen "Win" og flagget vises.  
 Ved å fjerne denne forsinkelsen, kan man skyte flere anti-missiler og dermed vinne spillet.
 
+<p align="center">
+<img src="images/1.15_3.png" alt="Alt Text" width="50%" height="50%">
+</p>
+
+I bildet ovenfor har jeg fjernet forsinkelsen mellom avfyring av anti-missiler, og jeg kan dermed skyte ned missilene mye fortere
+
+<p align="center">
+<img src="images/1.15_4.png" alt="Alt Text" width="50%" height="50%">
+</p>
+
+
 Dersom man ikke ønsker å spille i det hele tatt, så kan man plassere `SceneManager.LoadScene("Win");` i en av Update()-metodene, og dermed motta flagget med en gang spillet starter.
+
+<p align="center">
+<img src="images/1.15_5.png" alt="Alt Text" width="50%" height="50%">
+</p>
 
 <br>
 <br>
