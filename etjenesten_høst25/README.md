@@ -485,3 +485,48 @@ $ curl -v -X CONNECT --path-as-is http://10.244.10.116:9000/service/../../../../
 < 
 719bd1bc27755dd0b485d7f3a09ad836
 ```
+
+<br>
+<br>
+
+## 2.20 Språkvansker
+```
+# Språkvansker
+
+Det er funnet en mistenkelig fil med navn "korstokk.png". Det er sikret en minnedump av maskinen. Finner du ut noe mer?
+```
+Her brukte jeg utallige timer på noe som kunne vært løst på 5min...
+
+Først kjørte jeg binwalk på `kortstokk.png", hvor det viste seg å ligge en skjult 7zip-fil med passordbeskyttet innhold. En kjapp zip2john -> hashcat utelukket et enkelt passord som lot seg knekke.
+Vi fikk tildelt en minnedump på flere GB, og jeg begynte undersøkelser ved hjelp av strings og grep. Jeg fant antydninger til rester av kommandoer som lignet på 7zip-kommando for å zippe filer. Men passordet var ikke synlig.
+
+Lite visste jeg om et fantastisk verktøy som heter "Volatility":
+```sh
+vol -f minnedump.etl windows.cmdscan.CmdScan | tee vol.cmdscan
+Volatility 3 Framework 2.26.2	PDB scanning finished                        
+
+PID	Process	ConsoleInfo	Property	Address	Data
+
+4628	conhost.exe	0x23fe043dc40	_COMMAND_HISTORY	0x23fe043dc40	None
+* 4628	conhost.exe	0x23fe043dc40	_COMMAND_HISTORY.Application	0x23fe043dc70	cmd.exe
+* 4628	conhost.exe	0x23fe043dc40	_COMMAND_HISTORY.ProcessHandle	0x23fe040a970	0x164
+* 4628	conhost.exe	0x23fe043dc40	_COMMAND_HISTORY.CommandCount	N/A	4
+* 4628	conhost.exe	0x23fe043dc40	_COMMAND_HISTORY.LastDisplayed	0x23fe043dc9c	3
+* 4628	conhost.exe	0x23fe043dc40	_COMMAND_HISTORY.CommandCountMax	0x23fe043dc68	50
+* 4628	conhost.exe	0x23fe043dc40	_COMMAND_HISTORY.CommandBucket	0x23fe043dc50	
+** 4628	conhost.exe	0x23fe043dc40	_COMMAND_HISTORY.CommandBucket_Command_0	0x23fe0439cd0	cd ..
+** 4628	conhost.exe	0x23fe043dc40	_COMMAND_HISTORY.CommandBucket_Command_1	0x23fe0439cf0	cd Temp
+** 4628	conhost.exe	0x23fe043dc40	_COMMAND_HISTORY.CommandBucket_Command_2	0x23fe0439d10	t -pУтфордринг a g f
+** 4628	conhost.exe	0x23fe043dc40	_COMMAND_HISTORY.CommandBucket_Command_3	0x23fe0439d30	copy /b c:\goodgames\pics\playing_cards_deck_small.png+g.7z korstokk.png
+** 4628	conhost.exe	0x23fe043dc40	_COMMAND_HISTORY.CommandBucket_Command_25	0x23fe0439ff0	
+6600	conhost.exe	0x1dbe8cd0050	_COMMAND_HISTORY	0x1dbe8cd0050	None
+* 6600	conhost.exe	0x1dbe8cd0050	_COMMAND_HISTORY.Application	0x1dbe8cd0080	RamCapture64.exe
+* 6600	conhost.exe	0x1dbe8cd0050	_COMMAND_HISTORY.ProcessHandle	0x1dbe8c9ad10	0xd8
+* 6600	conhost.exe	0x1dbe8cd0050	_COMMAND_HISTORY.CommandCount	N/A	0
+* 6600	conhost.exe	0x1dbe8cd0050	_COMMAND_HISTORY.LastDisplayed	0x1dbe8cd00ac	-1
+* 6600	conhost.exe	0x1dbe8cd0050	_COMMAND_HISTORY.CommandCountMax	0x1dbe8cd0078	50
+* 6600	conhost.exe	0x1dbe8cd0050	_COMMAND_HISTORY.CommandBucket	0x1dbe8cd0060
+```
+Voila, og vi har passordet på denne linjen: `** 4628	conhost.exe	0x23fe043dc40	_COMMAND_HISTORY.CommandBucket_Command_2	0x23fe0439d10	t -pУтфордринг a g f`
+Kommandoen ovenfor er del av en kommando hvor en fil blir passord-zippet med 7zip.
+Dette er passordet til zip-filen funnet i kortstokk.png, og inni zip-filen ligger flagget.
