@@ -307,6 +307,7 @@ Her fant jeg en heap exploit som førte til at jeg kunne overskrive addressen p�
 Hvert objekt inneholder en print-metode, metoden som kjører når brukeren velger alternativ "4: Show Device Info". 
 Ufullstendig fjerning av objektet førte til at jeg kunne overskrive adressen til denne print-metoden til metoden "print_flag()" og dermed motta flagget.
 
+Her er exploit-scriptet: https://github.com/vegkva/writeups/blob/main/etjenesten_h%C3%B8st25/cplusminus.py
 <br>
 <br>
 
@@ -323,12 +324,51 @@ ssh play@flagle
 ```
 ````
 Dette var et terminalbasert gjettespill hvor man hadde seks forsøk på å gjette riktig flagg.
-Det var satt opp seks rader og 32 kolonner, og for hver rad man fylte inn med hexadecimal fikk man vite hvilke hexadecimal som var i flagget og riktig plassert (grønn farge) og hvilke som ikke fantes i flagget i det hele tatt (hvit farge). Spillet ga ingen informasjon om riktig hexadecimal men feil plassering. Det som var interessant var at etter de seks førsøkene var brukt, fikk vi vite flagget.
+Det var satt opp seks rader og 32 kolonner, og for hver rad man fylte inn med hexadecimal fikk man vite hvilke hexadecimal som var i flagget og riktig plassert (grønn farge) og hvilke som ikke fantes i flagget i det hele tatt (hvit farge). Spillet ga ingen informasjon om riktig hexadecimal men feil plassering. Det som var interessant var at etter de seks forsøkene var brukt, fikk vi vite flagget for den aktuelle sesjonen.
 
 Man kunne sikkert ha løst denne ved å spille nok ganger, evt laget et script for å brute force det. Men det faktum at vi fikk se flagget etter forsøkene var brukt opp, var etter min mening et hint om at flagget ble generert basert på en timestamp. Derfor testet jeg dette ved å starte to spill samtidig (eller så samtidig jeg klarte med håp om at det var litt slingringsmonn)
-I tmux kan man synkronisere kommoandoer i flere vinduer ved å skrive inn `:set synchronize-panes on`. Dermed kunne jeg ha to vinduer åpne i tmux, og skrive ssh play@flagle og trykke ENTER i det ene vinduet, og det samme ble gjort i det andre vinduet samtidig-ish.
-For å teste om jeg hadde fått samme flagg i begge vinduene, skrev jeg for eksempel bare "a" i første rad. Dersom begge vinduene viste at f.eks. "a" var riktig i plasseringene 5,16 og 28, kunne jeg med ganske stor trygghet si at jeg hadde startet to spill med samme flagg. Så da var det bare å bruke opp alle forsøkene i det ene vinduet, notere flagget, og skrive inn flagget i det andre vinduet.
+I tmux kan man synkronisere kommoandoer i flere vinduer ved å skrive inn `:set synchronize-panes on`. 
+<p align="center">
+<img src="images/flagle1.png" alt="Alt Text" width="50%" height="50%">
+</p>
 
+Dermed kunne jeg ha to vinduer åpne i tmux, og skrive ssh play@flagle og trykke ENTER i det ene vinduet, og det samme ble gjort i det andre vinduet samtidig-ish.
+<p align="center">
+<img src="images/flagle2.png" alt="Alt Text" width="50%" height="50%">
+</p>
+
+
+For å teste om jeg hadde fått samme flagg i begge vinduene, skrev jeg tilfeldige hexadecimaler. Dersom begge vinduene viste at f.eks. "a" var riktig i plasseringene 5,16 og 28, kunne jeg med ganske stor trygghet si at jeg hadde startet to spill med samme flagg. Så da var det bare å bruke opp alle forsøkene i det ene vinduet, notere flagget, og skrive inn flagget i det andre vinduet.
+
+Første forsøk:
+<p align="center">
+<img src="images/flagle3.png" alt="Alt Text" width="50%" height="50%">
+</p>
+Her er det tydelig at jeg har fått to sesjoner med ulikt flagg
+
+<br>
+<br>
+
+Andre forsøk:
+<p align="center">
+<img src="images/flagle4.png" alt="Alt Text" width="50%" height="50%">
+</p>
+
+Her kan jeg med ganske stor sannsynlighet si at begge sesjonene har likt flagg, og skrur derfor av synkronisert input:
+<p align="center">
+<img src="images/flagle5.png" alt="Alt Text" width="50%" height="50%">
+</p>
+
+
+For å få frem flagget jeg skal "gjette", avslutter jeg de seks forsøkene i det øverste vinduet:
+<p align="center">
+<img src="images/flagle6.png" alt="Alt Text" width="50%" height="50%">
+</p>
+
+Og "gjetter" det riktige flagget i det nederste vinduet:
+<p align="center">
+<img src="images/flagle7.png" alt="Alt Text" width="50%" height="50%">
+</p>
 
 ## 2.11 Karapeks
 ```md
@@ -512,7 +552,8 @@ $ curl -v -X CONNECT --path-as-is http://10.244.10.116:9000/service/../../../../
 <br>
 
 ## 2.20 Språkvansker
-```
+Oppgavetekst:
+```md
 # Språkvansker
 
 Det er funnet en mistenkelig fil med navn "korstokk.png". Det er sikret en minnedump av maskinen. Finner du ut noe mer?
