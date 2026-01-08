@@ -307,9 +307,11 @@ Programmet var en terminalbasert device manager. Funksjonaliteten begrenset seg 
 Her fant jeg en heap exploit som førte til at jeg kunne overskrive addressen på et "Mouse Device"-objekt. 
 
 Hvert objekt inneholder en print-metode, metoden som kjører når brukeren velger alternativ "4: Show Device Info". 
-Ufullstendig fjerning av objektet førte til at jeg kunne overskrive adressen til denne print-metoden til metoden "print_flag()" og dermed motta flagget.
+Ufullstendig fjerning av objektet førte til at jeg kunne overskrive adressen til denne print-metoden med adressen til print_flag() og dermed motta flagget.
 
 Her er exploit-scriptet: https://github.com/vegkva/writeups/blob/main/etjenesten_h%C3%B8st25/cplusminus.py
+
+Denne oppgaven brukte jeg flere dager på å løse. Jeg fikk mye hjelp fra ChatGPT, og satt til slutt igjen med nesten ren C-kode, men den klarte aldri å gi meg et fungerende Python-script. Løsningen så jeg selv litt tilfeldig når jeg prøvde å finne riktig offset.
 <br>
 <br>
 
@@ -521,6 +523,8 @@ cat "$SRC/os-release" > /etc/os-release
 Den er ikke leselig for andre enn root, men det er ganske tydelig hva den gjør basert på hvilke filer man kan endre på i brukergrensesnittet til netttsiden og navnet på filen.
 
 Jeg løste denne deloppgaven ved å bruke symlinks. Ved å lage en symlink fra f.eks. motd som pekte mot /entrypoint.sh, og deretter kjøre `/usr/local/bin/sync-etc.sh` kunne jeg lese fra /etc/motd innholdet i /entrypoint.sh og dermed hvordan flagget til root var formatert. Deretter gjorde jeg det samme for å lese root-flagget.
+
+Her har jeg sett andre writeups utnytte at scriptet ikke bruker fullstendig filsti til `cat` for å få et shell som root. Dette burde jeg også sett, menmen...
 
 <br>
 
